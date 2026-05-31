@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Планировщик задач</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        body {
+            background: #eef2f5;
+            min-height: 100vh;
+            padding: 30px 24px;
+        }
+
+        .app-wrapper {
+            max-width: 1500px;
+            margin: 0 auto;
+        }
+
+        .auth-container {
+            max-width: 400px;
+            margin: 60px auto;
+            background: white;
+            border-radius: 32px;
+            padding: 32px;
+            box-shadow: 0 12px 28px rgba(0,0,0,0.08);
+            border: 1px solid #e2eaf1;
+        }
+        .auth-container h2 {
+            margin-bottom: 24px;
+            color: #1f2f44;
+        }
+        .auth-container input {
+            width: 100%;
+            padding: 12px 16px;
+            margin-bottom: 16px;
+            border: 1.5px solid #e0e8f0;
+            border-radius: 28px;
+            font-size: 14px;
+        }
+        .auth-container button {
+            width: 100%;
+            padding: 12px;
+            background: #2c4c6e;
+            color: white;
+            border: none;
+            border-radius: 28px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+        }
+        .auth-switch {
+            text-align: center;
+            color: #5b7c9e;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        .error-msg {
+            color: #c24141;
+            font-size: 13px;
+            text-align: center;
+            margin-top: 12px;
+        }
+        .hidden {
+            display: none;
+        }
+
+        .create-card {
+            background: #ffffff;
+            border-radius: 28px;
+            padding: 22px 28px;
+            margin-bottom: 32px;
+            box-shadow: 0 6px 14px rgba(0, 0, 0, 0.03);
+            border: 1px solid #e2eaf1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+            align-items: flex-end;
+        }
+        .input-field {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1 1 150px;
+        }
+        .input-field label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #4a627a;
+            letter-spacing: 0.3px;
+        }
+        .input-field input, .input-field select, .input-field textarea {
+            background: #fafcfe;
+            border: 1.5px solid #e0e8f0;
+            border-radius: 20px;
+            padding: 10px 14px;
+            font-size: 14px;
+        }
+        .btn-add {
+            background: #2c4c6e;
+            border: none;
+            padding: 10px 28px;
+            border-radius: 40px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            height: 46px;
+        }
+        .week-grid {
+            display: flex;
+            gap: 18px;
+            overflow-x: auto;
+            padding-bottom: 16px;
+            margin-bottom: 28px;
+        }
+        .day-column {
+            flex: 1;
+            min-width: 260px;
+            background: #ffffff;
+            border-radius: 28px;
+            border: 1px solid #e3eaf1;
+        }
+        .day-header {
+            background: linear-gradient(100deg, #dce3ec 0%, #e4eaf2 100%);
+            padding: 18px 12px;
+            text-align: center;
+            border-top-left-radius: 28px;
+            border-top-right-radius: 28px;
+        }
+        .day-title {
+            font-size: 19px;
+            font-weight: 700;
+            color: #1f2f44;
+        }
+        .task-count {
+            background: rgba(0, 0, 0, 0.08);
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 60px;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+        .tasks-list {
+            padding: 14px;
+            min-height: 420px;
+            max-height: 520px;
+            overflow-y: auto;
+        }
+        .task-item {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            border: 1px solid #e9edf4;
+            position: relative;
+            transition: all 0.2s;
+        }
+        .task-item:hover {
+            background: #f5f7fb;
+        }
+        .task-item.selected {
+            background: #e9f0f8;
+            border-left: 5px solid #5f7f9f;
+        }
+        .task-title {
+            font-weight: 700;
+            font-size: 15px;
+            padding-right: 46px;
+            margin-bottom: 8px;
+            word-break: break-word;
+        }
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .difficulty-badge {
+            font-size: 10px;
+            padding: 3px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        .assignee-badge {
+            font-size: 10px;
+            background: #edf2f8;
+            padding: 3px 10px;
+            border-radius: 30px;
+        }
+        .delete-task {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            background: none;
+            border: none;
+            font-size: 14px;
+            cursor: pointer;
+            color: #95aac9;
+            padding: 4px 8px;
+            border-radius: 8px;
+        }
+        .delete-task:hover {
+            background: #fee2e2;
+            color: #c24141;
+        }
+        .empty-placeholder {
+            text-align: center;
+            padding: 36px 12px;
+            color: #94a9c4;
+            font-size: 13px;
+        }
+        .detail-panel {
+            background: #fbfdfe;
+            border-radius: 28px;
+            padding: 20px 28px;
+            margin-top: 20px;
+            border: 1px solid #e5ecf3;
+        }
+        .detail-header {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c4a6e;
+            border-left: 4px solid #829ebd;
+            padding-left: 16px;
+            margin-bottom: 18px;
+        }
+        .logout-btn {
+            background: #c24141;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .user-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            background: white;
+            padding: 12px 24px;
+            border-radius: 60px;
+        }
+        @media (max-width: 860px) {
+            .week-grid { flex-direction: column; }
+            .create-card { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <!-- Форма входа/регистрации -->
+    <div id="authContainer" class="auth-container">
+        <h2 id="authTitle">Вход</h2>
+        <input type="text" id="authUsername" placeholder="Имя пользователя">
+        <input type="password" id="authPassword" placeholder="Пароль">
+        <button id="authSubmitBtn">Войти</button>
+        <div class="auth-switch" id="authSwitch">Нет аккаунта? Зарегистрироваться</div>
+        <div id="authError" class="error-msg"></div>
+    </div>
+
+    <!-- Основное приложение -->
+    <div id="mainApp" class="hidden">
+        <div class="user-header">
+            <span>Вы вошли как <strong id="usernameDisplay"></strong></span>
+            <button class="logout-btn" id="logoutBtn">Выйти</button>
+        </div>
+
+        <div class="create-card">
+            <div class="input-field" style="flex:2">
+                <label>Название</label>
+                <input type="text" id="taskTitle" placeholder="Например: подготовить отчет">
+            </div>
+            <div class="input-field" style="flex:2">
+                <label>Описание</label>
+                <textarea id="taskDesc" rows="1" placeholder="Детали, ссылки..."></textarea>
+            </div>
+            <div class="input-field">
+                <label>Сложность</label>
+                <select id="taskDifficulty">
+                    <option value="легкая">легкая</option>
+                    <option value="средняя">средняя</option>
+                    <option value="сложная">сложная</option>
+                </select>
+            </div>
+            <div class="input-field">
+                <label>День</label>
+                <select id="taskDay">
+                    <option value="понедельник">понедельник</option>
+                    <option value="вторник">вторник</option>
+                    <option value="среда">среда</option>
+                    <option value="четверг">четверг</option>
+                    <option value="пятница">пятница</option>
+                    <option value="суббота">суббота</option>
+                    <option value="воскресенье">воскресенье</option>
+                </select>
+            </div>
+            <div class="input-field">
+                <label>Кому выдать</label>
+                <input type="text" id="taskAssignee" placeholder="Имя или команда">
+            </div>
+            <button class="btn-add" id="addTaskBtn">Добавить задачу</button>
+        </div>
+
+        <div class="week-grid" id="weekGrid"></div>
+
+        <div class="detail-panel">
+            <div class="detail-header">Информация о задаче</div>
+            <div id="detailContent">Нажмите на задачу, чтобы увидеть полные данные</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = 'http://127.0.0.1:5000/api';
+    let currentUser = null;
+    let allTasks = [];
+    let selectedId = null;
+    let isLoginMode = true;
+
+    const daysOrder = ['понедельник', 'вторник', 'среда', 'четверг', 'пятница', 'суббота', 'воскресенье'];
+    const dayShort = {
+        'понедельник': 'ПН', 'вторник': 'ВТ', 'среда': 'СР',
+        'четверг': 'ЧТ', 'пятница': 'ПТ', 'суббота': 'СБ', 'воскресенье': 'ВС'
+    };
+
+    const diffColors = {
+        'легкая': { bg: '#e2f3e4', color: '#2d6a4f' },
+        'средняя': { bg: '#ffefdb', color: '#b45f2b' },
+        'сложная': { bg: '#ffe0e0', color: '#bc4a4a' }
+    };
+
+    async function apiRequest(url, method, body) {
+        try {
+            const res = await fetch(API_BASE + url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: body ? JSON.stringify(body) : undefined
+            });
+            const data = await res.json();
+            return { ok: res.ok, data: data };
+        } catch(e) {
+            console.error('Ошибка запроса:', e);
+            return { ok: false, error: true, message: 'Сервер не отвечает' };
+        }
+    }
+
+    async function submitAuth() {
+        const username = document.getElementById('authUsername').value.trim();
+        const password = document.getElementById('authPassword').value;
+        const errorDiv = document.getElementById('authError');
+        
+        if (!username || !password) {
+            errorDiv.innerText = 'Заполните все поля';
+            return;
+        }
+        
+        const endpoint = isLoginMode ? '/login' : '/register';
+        const result = await apiRequest(endpoint, 'POST', { username, password });
+        
+        if (result.ok && result.data.success) {
+            currentUser = { id: result.data.user_id, username: result.data.username };
+            document.getElementById('authContainer').classList.add('hidden');
+            document.getElementById('mainApp').classList.remove('hidden');
+            document.getElementById('usernameDisplay').innerText = result.data.username;
+            await loadTasks();
+            renderEverything();
+        } else {
+            errorDiv.innerText = result.data?.message || 'Ошибка';
+        }
+    }
+
+    function switchAuthMode() {
+        isLoginMode = !isLoginMode;
+        const btn = document.getElementById('authSubmitBtn');
+        const switchText = document.getElementById('authSwitch');
+        const title = document.getElementById('authTitle');
+        if (isLoginMode) {
+            title.innerText = 'Вход';
+            btn.innerText = 'Войти';
+            switchText.innerText = 'Нет аккаунта? Зарегистрироваться';
+        } else {
+            title.innerText = 'Регистрация';
+            btn.innerText = 'Зарегистрироваться';
+            switchText.innerText = 'Уже есть аккаунт? Войти';
+        }
+        document.getElementById('authError').innerText = '';
+    }
+
+    function logout() {
+        currentUser = null;
+        allTasks = [];
+        selectedId = null;
+        document.getElementById('authContainer').classList.remove('hidden');
+        document.getElementById('mainApp').classList.add('hidden');
+        document.getElementById('authUsername').value = '';
+        document.getElementById('authPassword').value = '';
+        document.getElementById('authError').innerText = '';
+    }
+
+    async function loadTasks() {
+        if (!currentUser) return;
+        const result = await apiRequest(`/tasks?user_id=${currentUser.id}`, 'GET');
+        if (result.ok && result.data.tasks) {
+            allTasks = result.data.tasks;
+        } else {
+            allTasks = [];
+        }
+    }
+
+    async function addNewTask() {
+        const title = document.getElementById('taskTitle').value.trim();
+        if (!title) {
+            alert('Введите название задачи');
+            return;
+        }
+        
+        const newTask = {
+            user_id: currentUser.id,
+            title: title,
+            description: document.getElementById('taskDesc').value || '',
+            difficulty: document.getElementById('taskDifficulty').value,
+            day: document.getElementById('taskDay').value,
+            assignee: document.getElementById('taskAssignee').value.trim() || 'не назначен'
+        };
+        
+        const result = await apiRequest('/tasks', 'POST', newTask);
+        
+        if (result.ok && result.data.success) {
+            // Очищаем поля
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDesc').value = '';
+            document.getElementById('taskAssignee').value = '';
+            // Перезагружаем задачи
+            await loadTasks();
+            renderEverything();
+        } else {
+            alert('Ошибка при добавлении задачи');
+        }
+    }
+
+    async function deleteTask(taskId, event) {
+        event.stopPropagation();
+        const result = await apiRequest(`/tasks/${taskId}?user_id=${currentUser.id}`, 'DELETE');
+        if (result.ok) {
+            if (selectedId === taskId) selectedId = null;
+            await loadTasks();
+            renderEverything();
+        } else {
+            alert('Ошибка при удалении');
+        }
+    }
+
+    function selectTask(taskId) {
+        selectedId = taskId;
+        renderWeekBoard();
+        renderDetail();
+    }
+
+    function renderWeekBoard() {
+        const container = document.getElementById('weekGrid');
+        if (!container) return;
+
+        const grouped = {};
+        daysOrder.forEach(day => { grouped[day] = []; });
+        
+        allTasks.forEach(task => {
+            if (task.day && grouped[task.day]) {
+                grouped[task.day].push(task);
+            }
+        });
+
+        let html = '';
+        for (let day of daysOrder) {
+            const dayTasks = grouped[day] || [];
+            html += `
+                <div class="day-column">
+                    <div class="day-header">
+                        <div class="day-title">${dayShort[day]} · ${day}</div>
+                        <div class="task-count">${dayTasks.length} задач</div>
+                    </div>
+                    <div class="tasks-list">
+            `;
+            if (dayTasks.length === 0) {
+                html += `<div class="empty-placeholder">нет задач</div>`;
+            } else {
+                for (let task of dayTasks) {
+                    const isSelected = (selectedId === task.id);
+                    const style = diffColors[task.difficulty] || diffColors['средняя'];
+                    html += `
+                        <div class="task-item ${isSelected ? 'selected' : ''}" data-task-id="${task.id}">
+                            <button class="delete-task" data-task-id="${task.id}">✖</button>
+                            <div class="task-title">${escapeHtml(task.title)}</div>
+                            <div class="task-meta">
+                                <span class="difficulty-badge" style="background:${style.bg}; color:${style.color}">${task.difficulty}</span>
+                                <span class="assignee-badge">${escapeHtml(task.assignee)}</span>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            html += `</div></div>`;
+        }
+        container.innerHTML = html;
+        
+        // Привязываем обработчики после отрисовки
+        document.querySelectorAll('.task-item').forEach(el => {
+            const taskId = parseInt(el.dataset.taskId);
+            el.addEventListener('click', () => selectTask(taskId));
+        });
+        document.querySelectorAll('.delete-task').forEach(btn => {
+            const taskId = parseInt(btn.dataset.taskId);
+            btn.addEventListener('click', (e) => deleteTask(taskId, e));
+        });
+    }
+
+    function renderDetail() {
+        const detailDiv = document.getElementById('detailContent');
+        if (!detailDiv) return;
+        if (!selectedId) {
+            detailDiv.innerHTML = 'Нажмите на задачу, чтобы увидеть описание';
+            return;
+        }
+        const task = allTasks.find(t => t.id === selectedId);
+        if (!task) {
+            detailDiv.innerHTML = 'Задача не найдена';
+            return;
+        }
+        const style = diffColors[task.difficulty] || diffColors['средняя'];
+        detailDiv.innerHTML = `
+            <div>
+                <div style="font-size:20px; font-weight:600; margin-bottom:12px;">${escapeHtml(task.title)}</div>
+                <div style="background:#f2f6fc; padding:14px; border-radius:20px; margin:12px 0;">
+                    <strong>Описание:</strong><br>${escapeHtml(task.description) || '— нет описания —'}
+                </div>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:12px;">
+                    <span style="background:${style.bg}; padding:5px 18px; border-radius:40px; font-size:13px;">${task.difficulty}</span>
+                    <span style="background:#eef2f8; padding:5px 18px; border-radius:40px; font-size:13px;">${task.day}</span>
+                    <span style="background:#eef2f8; padding:5px 18px; border-radius:40px; font-size:13px;">Ответственный: ${escapeHtml(task.assignee)}</span>
+                </div>
+                <div style="margin-top: 16px; font-size: 11px; color: #9cb0cc;">ID: ${task.id}</div>
+            </div>
+        `;
+    }
+
+    function renderEverything() {
+        renderWeekBoard();
+        renderDetail();
+    }
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, (m) => {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+
+    function init() {
+        document.getElementById('authSubmitBtn').addEventListener('click', submitAuth);
+        document.getElementById('authSwitch').addEventListener('click', switchAuthMode);
+        document.getElementById('logoutBtn').addEventListener('click', logout);
+        document.getElementById('addTaskBtn').addEventListener('click', addNewTask);
+        
+        // Enter в поле названия
+        document.getElementById('taskTitle').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addNewTask();
+        });
+    }
+
+    init();
+</script>
+</body>
+</html> 
