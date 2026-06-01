@@ -3,7 +3,7 @@
 <br>
 Мой
 <br>
-<img width="400" height="400" alt="image" src="https://github.com/user-attachments/assets/7fb94d7e-299b-495b-8e33-6e50adc89609" />
+<img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/08c217c8-151d-4456-b7bd-ae2e03bb87b6" />
 <br>
 
 ## Описание 
