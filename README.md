@@ -1,7 +1,7 @@
 ## Название 
 
 <br>
-Мой
+
 <br>
 <img width="256" height="256" alt="image" src="https://github.com/user-attachments/assets/08c217c8-151d-4456-b7bd-ae2e03bb87b6" />
 <br>
